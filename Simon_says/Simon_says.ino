@@ -1,194 +1,103 @@
-//MATRIX CODE
-
-#include <WiFiUdp.h>
-#include <ESP8266WiFi.h>
-
-
-#define p1 D1 
-#define p2 D2 
-#define p3 D3 
-#define p4 D4 
-#define p5 D0
-
-const char* ssid = "harsh"; //Enter your wifi network SSID
-const char* password ="12345678"; //Enter your wifi network password
-
-
-const int SERVER_PORT = 1111;
-const int BAUD_RATE = 115200;
-
-byte incomingByte = 0;
-
-bool playerA = false;
-bool playerB = false;
-bool playerC = false;
-bool playerD = false;
-bool resetAll = false;
-
-bool set = false;
-
-const int A_PRESSED = 49;
-const int B_PRESSED = 50;
-const int C_PRESSED = 51;
-const int D_PRESSED = 52;
-const int RESET_PRESSED = 53;
-
-byte packetBuffer[512];
-
-WiFiUDP Udp;
-IPAddress ip;
-
-void initOutputs() {
-  pinMode(p1,OUTPUT);
-  pinMode(p2,OUTPUT);
-  pinMode(p3,OUTPUT);
-  pinMode(p4,OUTPUT);
-  pinMode(p5,OUTPUT);
+int button[100],i,j=1,flag,led[100];
+int button1,button2,button3,button4;
+void setup()
+{
+  randomSeed(analogRead(0));
+  Serial.begin(9600);
+  pinMode(2,INPUT_PULLUP); //Button1
+  pinMode(3,INPUT_PULLUP); //Button2
+  pinMode(4,INPUT_PULLUP); //Button3
+  pinMode(5,INPUT_PULLUP); //Button4
+  pinMode(6,OUTPUT);       //LED to show correct answer
+  pinMode(7,OUTPUT);       //LED to show wrong answer
+  pinMode(8,OUTPUT);       //LED1
+  pinMode(9,OUTPUT);       //LED2
+  pinMode(10,OUTPUT);      //LED3
+  pinMode(11,OUTPUT);      //LED4
+  pinMode(12,OUTPUT);      //LED to show recording ie- when on, press button 1-4 to record for checking  
 }
 
-void connectWifi() {
-  Serial.println();
-  Serial.println();
-  Serial.print("Connecting to WIFI network");
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) 
+void loop() 
+{
+  flag =0;
+  for(i=0;i<j;i++) //TO GIVE OUTPUT 
   {
-    delay(500);
-    Serial.print(".");
+   led[i]=random(1,5);
+    switch(led[i])
+    {
+     case 1:
+     {
+       digitalWrite(8,HIGH);
+       delay(500);
+       digitalWrite(8,LOW);
+       delay(500);
+       break;
+     }
+     case 2:
+     {
+       digitalWrite(9,HIGH);
+       delay(500);
+       digitalWrite(9,LOW);
+       delay(500);
+       break;
+     }
+     case 3:
+     {
+       digitalWrite(10,HIGH);
+       delay(500);
+       digitalWrite(10,LOW);
+       delay(500);
+       break;
+     }
+     case 4:
+     {
+       digitalWrite(11,HIGH);
+       delay(500);
+       digitalWrite(11,LOW);
+       delay(500);
+       break;
+     }
+   }  
   }
-  Serial.println("WiFi connected");
-  Udp.begin(SERVER_PORT);
-  ip = WiFi.localIP();
-  Serial.println(ip);
-}
-
-void detectKeyPresses() {
-    if (incomingByte == A_PRESSED) {
-      playerA = true;
-      playerB = false;
-      playerC = false;
-      playerD = false;
-      resetAll = false;
-    }
-    else if (incomingByte == B_PRESSED) {
-      playerA = false;
-      playerB = true;
-      playerC = false;
-      playerD = false;
-      resetAll = false;
-    }
-    else if (incomingByte == C_PRESSED) {
-      playerA = false;
-      playerB = false;
-      playerC = true;
-      playerD = false;
-      resetAll = false;
-    }
-    else if (incomingByte == D_PRESSED) {
-      playerA = false;
-      playerB = false;
-      playerC = false;
-      playerD = true;
-      resetAll = false;
-    }
-    else if(incomingByte == RESET_PRESSED) {
-      playerA = false;
-      playerB = false;
-      playerC = false;
-      playerD = false;
-      resetAll = true;
-    }
-}
-
-void handlePinOutputs() {
-  if (playerA == true && set == false) 
-  { 
-    digitalWrite(p1,HIGH);
-    digitalWrite(p5,HIGH);
-    Serial.println("Player1");
-    set = true;
-  }
-  else if (playerB == true && set == false) 
+  delay(1000);
+  for(i=0;i<j;i++) // To take input while LED12 is on and check for flag
   {
-    digitalWrite(p2,HIGH);
-    digitalWrite(p5,HIGH);
-    Serial.println("Player2");
-    set = true;
+   digitalWrite(12,HIGH);
+   delay(1000);
+   button1= digitalRead(2);
+   button2= digitalRead(3);
+   button3= digitalRead(4);
+   button4= digitalRead(5);
+   digitalWrite(12,LOW);
+   delay(1000);
+   if(button1==0)
+   { button[i]=1; }
+   else if(button2==0)
+   { button[i]=2; }
+   else if(button3==0)
+   { button[i]=3; }
+   else if(button4==0)
+   { button[i]=4; }
+   else button[i]=1;
+   if(button[i]!=led[i])
+   flag=1;
   }
-  else if(playerC == true && set == false)
+  if(flag==1)
   {
-    digitalWrite(p3,HIGH);
-    digitalWrite(p5,HIGH);
-    Serial.println("Player3");
-    set = true;
+     digitalWrite(6,HIGH);
+     delay(2000);
+     digitalWrite(6,LOW);
+     delay(1000);
+     j=0;
   }
-  else if(playerD == true && set == false)
+  if(flag==0)
   {
-    digitalWrite(p4,HIGH);
-    digitalWrite(p5,HIGH);
-    Serial.println("Player4");
-    set = true;
-  }
-  else if(resetAll == true )
-  {
-    digitalWrite(p1,LOW);
-    digitalWrite(p2,LOW);
-    digitalWrite(p3,LOW);
-    digitalWrite(p4,LOW);
-    digitalWrite(p5,LOW);
-    Serial.println("Reset");
-    set = false;
-  }
-}
-
-void setup() {
-  Serial.begin(BAUD_RATE);
-  delay(10);
-  initOutputs();
-  connectWifi();
-}
-
-void loop() {
-  int noBytes = Udp.parsePacket();
-  String received_command = "";
-  if ( noBytes ) 
-  {
-    Serial.print(millis() / 1000);
-    Serial.print(":Packet of ");
-    Serial.print(noBytes);
-    Serial.print(" received from ");
-    Serial.print(Udp.remoteIP());
-    Serial.print(":");
-    Serial.println(Udp.remotePort());
+    digitalWrite(7,HIGH);
+    delay(1000);
+    digitalWrite(7,LOW);
+    delay(1000);
     
-    Udp.read(packetBuffer,noBytes);
-    Serial.println();
-
-    if(noBytes >1 ) {
-      incomingByte = 0;
-      Serial.println("Greater than 1..");
-      //Serial.println(noBytes);
-      for(int i=0;i<noBytes ; i++) {
-        int flag;
-        if(i == 0)
-          flag = 10;
-        else 
-          flag = 1;
-        incomingByte = incomingByte + ((packetBuffer[i] - 48)*flag);
-        
-      }
-      incomingByte = incomingByte + 48;
-      Serial.println(incomingByte);
-      Serial.println();
-      
-    } else {
-      
-      Serial.println(packetBuffer[0]);
-      incomingByte = packetBuffer[0];
-      Serial.println();
-    
-    }
-    detectKeyPresses();
-    handlePinOutputs();
   }
+  j++;
+  delay(1000);
 }
