@@ -8,13 +8,12 @@ void setup()
   pinMode(3,INPUT_PULLUP); //Button2
   pinMode(4,INPUT_PULLUP); //Button3
   pinMode(5,INPUT_PULLUP); //Button4
-  pinMode(6,OUTPUT);       //LED to show correct answer
-  pinMode(7,OUTPUT);       //LED to show wrong answer
+  pinMode(6,OUTPUT);       //Output to show Wrong answer
+  pinMode(7,OUTPUT);       //LED to show correct answer
   pinMode(8,OUTPUT);       //LED1
   pinMode(9,OUTPUT);       //LED2
   pinMode(10,OUTPUT);      //LED3
   pinMode(11,OUTPUT);      //LED4
-  pinMode(12,OUTPUT);      //LED to show recording ie- when on, press button 1-4 to record for checking  
 }
 
 void loop() 
@@ -60,16 +59,16 @@ void loop()
    }  
   }
   delay(1000);
-  for(i=0;i<j;i++) // To take input while LED12 is on and check for flag
+  for(i=0;i<j;i++) // To take input while LED is on
   {
-   digitalWrite(12,HIGH);
-   delay(1000);
+   while( digitalRead(2) == 1 || digitalRead(3) == 1 || digitalRead(4) == 1 || digitalRead(5) == 1 )
+   {
+    delay(100);
+   }
    button1= digitalRead(2);
    button2= digitalRead(3);
    button3= digitalRead(4);
    button4= digitalRead(5);
-   digitalWrite(12,LOW);
-   delay(1000);
    if(button1==0)
    { button[i]=1; }
    else if(button2==0)
@@ -81,6 +80,7 @@ void loop()
    else button[i]=1;
    if(button[i]!=led[i])
    flag=1;
+   delay(1000);
   }
   if(flag==1)
   {
@@ -96,7 +96,10 @@ void loop()
     delay(1000);
     digitalWrite(7,LOW);
     delay(1000);
-    
+    digitalWrite(7,HIGH);
+    delay(1000);
+    digitalWrite(7,LOW);
+    delay(1000);    
   }
   j++;
   delay(1000);
