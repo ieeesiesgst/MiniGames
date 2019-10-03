@@ -59,12 +59,6 @@ void loop()
    }  
   }
   delay(1000);
-  for(i=0;i<j;i++) // To take input while LED is on
-  {
-   while( digitalRead(2) == 1 || digitalRead(3) == 1 || digitalRead(4) == 1 || digitalRead(5) == 1 )
-   {
-    delay(100);
-   }
    button1= digitalRead(2);
    button2= digitalRead(3);
    button3= digitalRead(4);
